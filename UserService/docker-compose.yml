@@ -1,0 +1,36 @@
+version: '3.4'
+
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: toor
+      POSTGRES_DB: postgresqlUser
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@example.com"
+      PGADMIN_DEFAULT_PASSWORD: "adminpassword"
+    depends_on:
+      - postgres
+    ports:
+      - "5050:5050"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+  userservice:
+    build: .
+    depends_on:
+      - postgres
+    ports:
+      - "8000:8000"
+
+volumes:
+  postgres_data:
+  pgadmin_data:
