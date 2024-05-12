@@ -1,36 +1,32 @@
 version: '3.4'
 
 services:
-  postgres:
+  postgresqlUser:
     image: postgres
+    container_name: postgresqlUser
+    restart: always
     environment:
+      POSTGRES_DB: userservice
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: toor
-      POSTGRES_DB: postgresqlUser
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: "admin@example.com"
-      PGADMIN_DEFAULT_PASSWORD: "adminpassword"
-    depends_on:
-      - postgres
-    ports:
-      - "5050:5050"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
+      - postgres_data:/var/lib/postgresqlUser/data
 
   userservice:
-    build: .
+    image: ${DOCKER_REGISTRY-}userservice
+    build:
+      context: .
+      dockerfile: UserService/Dockerfile
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgresqlUser;Port=5432;Database=userservice;Username=postgres;Password=toor"
     depends_on:
-      - postgres
+      - postgresqlUser
     ports:
-      - "8000:8000"
+      - "5047:5047"
 
 volumes:
   postgres_data:
-  pgadmin_data:
+    driver: local
+

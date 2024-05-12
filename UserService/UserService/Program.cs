@@ -20,13 +20,20 @@ builder.Services.AddAuthentication().AddBearerToken(IdentityConstants.BearerSche
 builder.Services.AddAuthorizationBuilder();
 
 // Configure DbContext
-builder.Services.AddDbContext<UserDbContext>(optionsAction => optionsAction.UseNpgsql("Database"));
+builder.Services.AddDbContext<UserDbContext>(optionsAction => optionsAction.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddIdentityCore<User>()
     .AddEntityFrameworkStores<UserDbContext>()
     .AddApiEndpoints();
 
 var app = builder.Build();
+
+// Automatically apply migrations this is the better way to do this.
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+    dbContext.Database.Migrate();
+}
 
 app.MapIdentityApi<User>();
 
